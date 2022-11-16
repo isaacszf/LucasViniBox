@@ -20,9 +20,9 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// Slice that contains the paths to the templates. The "base" template must be the
 	// first one inside the slice
 	files := []string{
-		"../../ui/html/base.tmpl.html",
-		"../../ui/html/pages/home.tmpl.html",
-		"../../ui/html/components/nav.tmpl.html",
+		"./ui/html/base.tmpl.html",
+		"./ui/html/pages/home.tmpl.html",
+		"./ui/html/components/nav.tmpl.html",
 	}
 
 	// Reading the files and storing the templates in a template set

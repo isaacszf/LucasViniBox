@@ -13,7 +13,7 @@ func main() {
 	/* I still not sure why a public file server is useful in this project but OK */
 
 	// Creating file server which get files from "ui/static" to the user
-	fileServer := http.FileServer(http.Dir("../../ui/static/"))
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
 
 	// Using the "mux.Handle()" to register the file server as the handler for all
 	// URL paths that start with "/static/". We need to use "StripPrefix" to match
