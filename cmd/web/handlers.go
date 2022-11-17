@@ -3,17 +3,17 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
 
 // This is a handler (Handler = MVC Controller)
-func home(w http.ResponseWriter, r *http.Request) {
+// This is also *application method, this is used so that we can use dependency injection
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// Checking if req url is equal to "/"
 	if r.URL.Path != "/" {
-		// This function returns a 404 response ("404 page not found")
-		http.NotFound(w, r)
+		// This function returns a 404 response (using custom helper)
+		app.notFound(w)
 		return
 	}
 
@@ -29,10 +29,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// (using "html/template" package)
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		log.Println(err.Error())
-
-		// If something goes wrong, returns 500 (internal server error)
-		http.Error(w, "Internal Server Error", 500)
+		app.serverError(w, err)
 		return
 	}
 
@@ -41,13 +38,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// which in this case is "nil" (by the time i'm writing this)
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
+		app.serverError(w, err)
 	}
 }
 
 // Handler to view a snippet
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// localhost:4000/snippet/view?id=1
 
 	// Extracting the ID value from URL (query parameter) and converting it
@@ -55,7 +51,7 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
 		// Returning 404 if error
-		http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
 
@@ -63,14 +59,14 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handler to create a snippet
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	// Checking if request method is POST or not
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost) // Telling the user which methods are allowed
 
 		// Returning status code 405 (method not allowed) if the request method
 		// is different than POST
-		http.Error(w, "Method not Allowed", 405)
+		app.clientError(w, 405)
 
 		return
 	}
