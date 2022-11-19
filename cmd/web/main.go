@@ -1,10 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"log"
 	"net/http"
 	"os"
+
+	_ "github.com/go-sql-driver/mysql"
+
+	// Database Snippet Model
+	"lucasvinibox.isaacszf.net/internal/models"
 )
 
 // Application struct to hold the application-wide dependencies for the application.
@@ -12,12 +18,30 @@ import (
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	snippets *models.SnippetModel
+}
+
+// Function to open the database and verifying it
+func openDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	// Verifying if connection succeeded
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
 func main() {
 	// Adding a new command-line flag to set the port (default is "4000")
 	// EX: go ./cmd/web -addr=":9999"
 	addr := flag.String("addr", ":4000", "HTTP Network Address")
+	dsn := flag.String("dsn",
+		"web:220406@/lucasvinibox?parseTime=true", "MySQL data source name")
 
 	// This is needed because this reads the command file passed by the user and parse it
 	// to the variable "addr". Otherwise, "addr" will always be ":4000"
@@ -30,10 +54,18 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// Creating a connection pool between the App and Database
+	db, err := openDB(*dsn)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer db.Close()
+
 	// Initializing App Struct and ServeMux
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		snippets: &models.SnippetModel{Database: db},
 	}
 
 	muxRoutes := app.routes()
@@ -51,6 +83,6 @@ func main() {
 	infoLog.Printf("🔥 Starting server on http://localhost%s", *addr)
 
 	// Starting web server with "listenAndAdvice" using the custom struct
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }

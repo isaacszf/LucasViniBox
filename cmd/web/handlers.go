@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
+
+	"lucasvinibox.isaacszf.net/internal/models"
 )
 
 // This is a handler (Handler = MVC Controller)
@@ -17,29 +19,38 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	snippets, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	for _, snippet := range snippets {
+		fmt.Fprintf(w, "%+v\n", snippet)
+	}
+
 	// Slice that contains the paths to the templates. The "base" template must be the
 	// first one inside the slice
-	files := []string{
+	/* files := []string{
 		"./ui/html/base.tmpl.html",
 		"./ui/html/pages/home.tmpl.html",
 		"./ui/html/components/nav.tmpl.html",
-	}
+	} */
 
 	// Reading the files and storing the templates in a template set
 	// (using "html/template" package)
-	ts, err := template.ParseFiles(files...)
+	/* ts, err := template.ParseFiles(files...)
 	if err != nil {
 		app.serverError(w, err)
 		return
-	}
+	} */
 
 	// Using "ExecuteTemplate()" method to write the content inside "base" to the resp
 	// body. The third parameter represents any dynamic data that we want to pass in,
 	// which in this case is "nil" (by the time i'm writing this)
-	err = ts.ExecuteTemplate(w, "base", nil)
+	/* err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
 		app.serverError(w, err)
-	}
+	} */
 }
 
 // Handler to view a snippet
@@ -55,7 +66,20 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Display a specific snippet with ID %d...", id)
+	// Retrieving the data for a specific record based on its ID
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+
+		return
+	}
+
+	// Writing the snippet data as a plain-text HTTP resp body
+	fmt.Fprintf(w, "%+v", snippet)
 }
 
 // Handler to create a snippet
@@ -71,5 +95,16 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("Create a new snippet..."))
+	// Dummy data to pass to the database
+	title := "O snail"
+	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
+	expires := 7
+
+	id, err := app.snippets.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	// Redirect the user to the relevant page for the snippet
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), 303)
 }
