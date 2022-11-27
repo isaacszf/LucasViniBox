@@ -24,33 +24,12 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 	}
 
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n", snippet)
-	}
+	// Template data using method
+	data := app.newTemplateData(r)
+	data.Snippets = snippets
 
-	// Slice that contains the paths to the templates. The "base" template must be the
-	// first one inside the slice
-	/* files := []string{
-		"./ui/html/base.tmpl.html",
-		"./ui/html/pages/home.tmpl.html",
-		"./ui/html/components/nav.tmpl.html",
-	} */
-
-	// Reading the files and storing the templates in a template set
-	// (using "html/template" package)
-	/* ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	} */
-
-	// Using "ExecuteTemplate()" method to write the content inside "base" to the resp
-	// body. The third parameter represents any dynamic data that we want to pass in,
-	// which in this case is "nil" (by the time i'm writing this)
-	/* err = ts.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.serverError(w, err)
-	} */
+	// Using the helper method
+	app.render(w, 200, "home.tmpl.html", data)
 }
 
 // Handler to view a snippet
@@ -78,8 +57,12 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Writing the snippet data as a plain-text HTTP resp body
-	fmt.Fprintf(w, "%+v", snippet)
+	// Using method
+	data := app.newTemplateData(r)
+	data.Snippet = snippet
+
+	// Using the helper method
+	app.render(w, 200, "view.tmpl.html", data)
 }
 
 // Handler to create a snippet

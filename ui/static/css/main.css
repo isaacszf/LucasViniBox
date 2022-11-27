@@ -245,7 +245,7 @@ button:hover {
 }
 
 .snippet {
-    background-color: #FFFFFF;
+    background-color: var(--background-black);
     border: 1px solid var(--border-black);
     border-radius: 3px;
 }
@@ -257,7 +257,7 @@ button:hover {
 }
 
 .snippet .metadata {
-    background-color: #F7F9FA;
+    background-color: var(--secondary-black);
     color: #6A6C6F;
     padding: 0.75em 18px;
     overflow: auto;
@@ -302,7 +302,7 @@ div.error {
 }
 
 table {
-    background: white;
+    background: var(--background-black);
     border: 1px solid var(--border-black);
     border-collapse: collapse;
     width: 100%;
@@ -325,7 +325,7 @@ tr {
 }
 
 tr:nth-child(2n) {
-    background-color: #F7F9FA;
+    background-color: var(--secondary-black);
 }
 
 footer {

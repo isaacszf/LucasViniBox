@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"text/template"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -16,9 +17,10 @@ import (
 // Application struct to hold the application-wide dependencies for the application.
 // (it will be used for dependency injection)
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippets *models.SnippetModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 // Function to open the database and verifying it
@@ -61,11 +63,18 @@ func main() {
 	}
 	defer db.Close()
 
+	// Initializing a new template cache
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	// Initializing App Struct and ServeMux
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippets: &models.SnippetModel{Database: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippets:      &models.SnippetModel{Database: db},
+		templateCache: templateCache,
 	}
 
 	muxRoutes := app.routes()

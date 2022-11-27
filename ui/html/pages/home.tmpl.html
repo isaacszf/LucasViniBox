@@ -2,5 +2,26 @@
 
 {{define "main"}}
 <h2>Latest Snippets</h2>
-<p>There's nothing to see here yet</p>
+{{if .Snippets}}
+<!-- If ".Snippets" length is greater than zero... -->
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Created</th>
+        <th>ID</th>
+    </tr>
+
+    {{range .Snippets}}
+    <!-- Iterating ".Snippets" -->
+    <tr>
+        <td><a href="/snippet/view?id={{.ID}}">{{.Title}}</a></td>
+        <td>{{humanDate .Created}}</td>
+        <td>#{{.ID}}</td>
+    </tr>
+    {{end}}
+</table>
+
+{{else}}
+<p>There's nothing to see here... yet!</p>
+{{end}}
 {{end}}
