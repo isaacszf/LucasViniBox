@@ -21,7 +21,7 @@ func humanDate(t time.Time) string {
 	return t.Format("02 Jan 2006 at 15:04")
 }
 
-// This is needed to use templa functions
+// This is needed to use template functions
 var functions = template.FuncMap{
 	"humanDate": humanDate,
 }
