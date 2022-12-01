@@ -154,8 +154,6 @@ nav a.live:after {
     background: var(--secondary-black);
     border-left: 1px solid var(--border-black);
     border-bottom: 1px solid var(--border-black);
-    -moz-transform: rotate(45deg);
-    -webkit-transform: rotate(-45deg);
 }
 
 a.button,

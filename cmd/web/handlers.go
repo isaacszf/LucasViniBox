@@ -6,18 +6,15 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/julienschmidt/httprouter"
 	"lucasvinibox.isaacszf.net/internal/models"
 )
 
 // This is a handler (Handler = MVC Controller)
 // This is also *application method, this is used so that we can use dependency injection
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	// Checking if req url is equal to "/"
-	if r.URL.Path != "/" {
-		// This function returns a 404 response (using custom helper)
-		app.notFound(w)
-		return
-	}
+	// Because httprouter matches the "/" path exactly, we can now remove the
+	// manual check of "r.Url != '/'" from this handler
 
 	snippets, err := app.snippets.Latest()
 	if err != nil {
@@ -34,13 +31,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 // Handler to view a snippet
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-	// localhost:4000/snippet/view?id=1
+	// Collecting the parameters passed by the user using httprouter req context
+	params := httprouter.ParamsFromContext(r.Context())
 
-	// Extracting the ID value from URL (query parameter) and converting it
-	// to a positive integer number (if user input is correct)
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	// The method "ByName" return the value of "id" from the slice and
+	// validate it as normal
+	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil || id < 1 {
-		// Returning 404 if error
 		app.notFound(w)
 		return
 	}
@@ -65,19 +62,8 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	app.render(w, 200, "view.tmpl.html", data)
 }
 
-// Handler to create a snippet
-func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	// Checking if request method is POST or not
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost) // Telling the user which methods are allowed
-
-		// Returning status code 405 (method not allowed) if the request method
-		// is different than POST
-		app.clientError(w, 405)
-
-		return
-	}
-
+// Handler to create snippet
+func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
 	// Dummy data to pass to the database
 	title := "O snail"
 	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
@@ -89,5 +75,10 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Redirect the user to the relevant page for the snippet
-	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), 303)
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), 303)
+}
+
+// Handler to see the form that will be use to create a snippet
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
+
 }
