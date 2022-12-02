@@ -160,7 +160,7 @@ a.button,
 input[type="submit"] {
     background-color: var(--rajah-orange);
     border-radius: 3px;
-    color: #FFFFFF;
+    color: var(--border-black);
     padding: 18px 27px;
     border: none;
     display: inline-block;
@@ -171,7 +171,7 @@ input[type="submit"] {
 a.button:hover,
 input[type="submit"]:hover {
     background-color: var(--rajah-orange-darker);
-    color: #FFFFFF;
+    color: var(--border-black);
     cursor: pointer;
     text-decoration: none;
 }
@@ -199,8 +199,8 @@ form input[type=text],
 form input[type="password"],
 form input[type="email"],
 textarea {
-    color: #6A6C6F;
-    background: #FFFFFF;
+    color: var(--white-text);
+    background: var(--secondary-black);
     border: 1px solid var(--border-black);
     border-radius: 3px;
 }
